@@ -206,8 +206,10 @@ function Dashboard() {
         }
     };
 
+    
+
     return (
-        <div className='text-center pt-4 font-bold'>
+        <div className='text-center pt-4 '>
             <Navbar runningCount={runningCount}
                 stoppedCount={stoppedCount}
                 totalCount={totalCount}

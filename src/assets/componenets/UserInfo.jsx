@@ -10,9 +10,22 @@ function UserInfo() {
         email: "",
         phone_number: "",
     })
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [showFilter, setShowFilter] = useState(false);
+    const [machines, setMachines] = useState([]);
+
+    const runningCount = machines.filter(item => item.IsRun === true || item.IsRun === "true").length;
+    const stoppedCount = machines.filter(item => item.IsRun === false || item.IsRun === "false").length;
+    const totalCount = machines.length;
 
     useEffect(() => {
         fetchUserData();
+        fetchData();
+        const interval = setInterval(() => {
+            fetchData();
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const fetchUserData = async () => {
@@ -39,15 +52,40 @@ function UserInfo() {
                 email: userData.Email || "",
                 phone_number: userData.MobileNo || "",
             })
-            
+
         } catch (error) {
             console.error("Error fetching user:", error);
+        }
+    };
+    const fetchData = async () => {
+        const EMB_URL = import.meta.env.VITE_EMB_URL;
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${EMB_URL}/api/data/getliveproductionOld`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+        });
+
+        const data = await res.json();
+        console.log(data.ResultData);
+
+        if (res.ok) {
+            setMachines(data.ResultData.LiveProductionData);
         }
     };
 
     return (
         <div className='pt-4'>
-            <Navbar />
+            <Navbar runningCount={runningCount}
+                stoppedCount={stoppedCount}
+                totalCount={totalCount}
+                setStatusFilter={setStatusFilter}
+                statusFilter={statusFilter}
+                showFilter={showFilter}
+                setShowFilter={setShowFilter} />
             <div className='pt-[100px]'>
                 <Paper sx={{ padding: 4, maxWidth: 900, margin: "auto" }}>
                     <Typography variant="h5" className='text-center' gutterBottom>

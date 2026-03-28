@@ -10,6 +10,7 @@ function Navbar({ runningCount, stoppedCount, totalCount, setStatusFilter, statu
     const [avgEfficiency, setAvgEfficiency] = useState(0);
     const [avgSpeed, setAvgSpeed] = useState(0);
     const [anchorEl, setAnchorEl] = useState(null);
+    
 
     const navigate = useNavigate();
     const open = Boolean(anchorEl);
@@ -44,7 +45,7 @@ function Navbar({ runningCount, stoppedCount, totalCount, setStatusFilter, statu
             fetchData();
         }, 5000);
 
-        return () => clearInterval(interval); // cleanup
+        return () => clearInterval(interval);
     }, []);
 
     const fetchData = async () => {
@@ -84,12 +85,7 @@ function Navbar({ runningCount, stoppedCount, totalCount, setStatusFilter, statu
 
                 setAvgSpeed(avgSpeed);
 
-                const runningMachine = () => {
-                    if (item.IsRun === "true") {
-
-                    }
-
-                }
+               
             }
         } catch (error) {
             console.error(error);
