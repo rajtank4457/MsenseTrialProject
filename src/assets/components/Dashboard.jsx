@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
     Table,
     TableHead,
@@ -13,34 +13,79 @@ import {
 } from "@mui/material";
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
+import { useData } from "../../context/DataContext";
+import { useThemeContext } from "../../context/ThemeContext";
+
 
 function Dashboard() {
-    const EMB_URL = import.meta.env.VITE_EMB_URL;
-    const [tableData, setTableData] = useState([]);
-    const [sortBy, setSortBy] = useState("none");
-    const [groupBy, setGroupBy] = useState("none");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [selectedGroup, setSelectedGroup] = useState("all");
-    const [showFilter, setShowFilter] = useState(false);
+    const { mode } = useThemeContext();
+    const { tableData,
+        sortBy, setSortBy,
+        groupBy, setGroupBy,
+        selectedGroup, setSelectedGroup,
+        statusFilter,
+        selectedRange, setSelectedRange,
+        effCounts,
+    } = useData();
     const navigate = useNavigate();
+    const [showFilter, setShowFilter] = useState(false);
 
+    const showBeamColumn = tableData.some(
+        item => item.IsShowBeam === true || item.IsShowBeam === "true"
+    );
 
-    const runningCount = tableData.filter(item => item.IsRun === true || item.IsRun === "true").length;
-    const stoppedCount = tableData.filter(item => item.IsRun === false || item.IsRun === "false").length;
-    const totalCount = tableData.length;
+    const groupOrder = [
+        "90 - 100",
+        "80 - 90",
+        "70 - 80",
+        "60 - 70",
+        "Below 60"
+    ];
 
-    const handleChange = (e) => {
-        setSortBy(e.target.value);
+    const getFilteredRangeData = (data) => {
+        if (selectedRange === "all") return data;
+
+        return data.filter(machine => {
+            const eff = machine.Efficiency;
+
+            if (selectedRange === "90-100") {
+                return eff >= 90 && eff <= 100;
+            }
+            if (selectedRange === "80-90") {
+                return eff >= 80 && eff < 90;
+            }
+            if (selectedRange === "70-80") {
+                return eff >= 70 && eff < 80;
+            }
+            if (selectedRange === "60-70") {
+                return eff >= 60 && eff < 70;
+            }
+            if (selectedRange === "below-60") {
+                return eff < 60;
+            }
+
+            return true;
+        });
     };
-    const handleChangeGroupby = (e) => {
-        setGroupBy(e.target.value);
-    }
 
-    const cardPage = () => {
-        navigate("/card");
-    }
+    const getCurrentDate = () => {
+        const d = new Date();
 
-    const groupOptions = [...new Set(tableData.map(item => item.DeviceGroup))];
+        const day = d.getDate().toString().padStart(2, "0");
+        const month = d.toLocaleString("en-GB", { month: "short" });
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    };
+
+    const getEfficiencyClass = (eff) => {
+        if (eff >= 90) return "green";
+        if (eff >= 80 && eff < 90) return "blue";
+        if (eff >= 70 && eff < 80) return "purple";
+        if (eff >= 60 && eff < 70) return "orange";
+        return "red";
+    };
+
 
     const getGroupFilteredData = (data) => {
         if (selectedGroup === "all") return data;
@@ -72,14 +117,6 @@ function Dashboard() {
 
     const filteredData = getFilteredData();
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(() => {
-            fetchData();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     const groupByDeviceGroup = (data) => {
         return data.reduce((acc, item) => {
@@ -92,7 +129,7 @@ function Dashboard() {
         }, {});
     };
 
-    const groupedData = groupByDeviceGroup(tableData);
+
 
     const groupByEfficiency = (data) => {
         return data.reduce((acc, item) => {
@@ -100,10 +137,14 @@ function Dashboard() {
 
             let group = "";
 
-            if (eff >= 80 && eff <= 100) {
-                group = "80 - 100";
-            } else if (eff >= 60 && eff < 80) {
-                group = "60 - 80";
+            if (eff >= 90 && eff <= 100) {
+                group = "90 - 100";
+            } else if (eff >= 80 && eff < 90) {
+                group = "80 - 90";
+            } else if (eff >= 70 && eff < 80) {
+                group = "70 - 80";
+            } else if (eff >= 60 && eff < 70) {
+                group = "60 - 70";
             } else {
                 group = "Below 60";
             }
@@ -115,7 +156,6 @@ function Dashboard() {
         }, {});
     };
 
-    const groupedDatabyEfficiency = groupByEfficiency(tableData);
 
     const groupByStatus = (data) => {
         return data.reduce((acc, item) => {
@@ -128,7 +168,7 @@ function Dashboard() {
         }, {});
     };
 
-    const groupedDatabyStatus = groupByStatus(tableData);
+
 
 
     const getSortedData = (data) => {
@@ -168,125 +208,33 @@ function Dashboard() {
 
     const sortedData = getSortedData(filteredData);
     const finalData = getGroupFilteredData(sortedData);
+    const groupedDatabyEfficiency = groupByEfficiency(finalData);
+    const groupedDatabyStatus = groupByStatus(finalData);
+    const groupedData = groupByDeviceGroup(finalData);
+    const filteredRangeData = getFilteredRangeData(finalData);
 
-    const fetchData = async () => {
-
-        const token = localStorage.getItem("token");
-        try {
-            const res = await fetch(`${EMB_URL}/api/data/getliveproductionOld`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                const newData = data.ResultData.LiveProductionData;
-                setTableData((prevData) => {
-                    return newData.map((newItem) => {
-                        const oldItem = prevData.find(
-                            (item) => item.Machine === newItem.Machine
-                        );
-
-                        if (!oldItem) return newItem;
-
-                        if (JSON.stringify(oldItem) !== JSON.stringify(newItem)) {
-                            return newItem;
-                        }
-
-                        return oldItem;
-                    });
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    
 
     return (
         <div className='text-center pt-4 '>
-            <Navbar runningCount={runningCount}
-                stoppedCount={stoppedCount}
-                totalCount={totalCount}
-                setStatusFilter={setStatusFilter}
-                statusFilter={statusFilter}
+            <Navbar
                 showFilter={showFilter}
                 setShowFilter={setShowFilter} />
             <div>
-                {showFilter && (<div className='flex justify-end'>
-                    <div className="mt-6 mb-2 mr-auto ml-[100px] border text-white rounded-lg px-4 py-[2px] bg-blue-500  text-center cursor-pointer hover:bg-blue-700 ">
-                        <Button onClick={cardPage} sx={{ color: "white" }}>Cards</Button>
-                    </div>
-                    <div className="mt-6 mb-2 mr-8">
-                        <TextField
-                            select
-                            label="Groups:"
-                            value={selectedGroup}
-                            onChange={(e) => setSelectedGroup(e.target.value)}
-                            size="small"
-                            className='w-[200px]'
-                        >
-                            <MenuItem value="all">All</MenuItem>
-                            {groupOptions.map((group, index) => (
-                                <MenuItem key={index} value={group}>
-                                    {group}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </div>
-                    <div className="mt-6 mb-2 mr-8">
-                        <TextField
-                            select
-                            label="Group by"
-                            value={groupBy}
-                            onChange={handleChangeGroupby}
-                            size="small"
-                            className='w-[200px]'
-                        >
-                            <MenuItem value="none">None</MenuItem>
-                            <MenuItem value="groupname">Group Name</MenuItem>
-                            <MenuItem value="efficiency">Efficiency</MenuItem>
-                            <MenuItem value="status">Status</MenuItem>
-                        </TextField>
-                    </div>
-                    <div className="mt-6 mb-2 mr-8">
-                        <TextField
-                            select
-                            label="Sort by"
-                            value={sortBy}
-                            onChange={handleChange}
-                            size="small"
-                            className='w-[200px]'
-                        >
-                            <MenuItem value="none">None</MenuItem>
-                            <MenuItem value="efficiencyhl">Efficiency H2L</MenuItem>
-                            <MenuItem value="efficiencylh">Efficiency L2H</MenuItem>
-                            <MenuItem value="productionhl">Production H2L</MenuItem>
-                            <MenuItem value="productionlh">Production L2H</MenuItem>
-                            <MenuItem value="speedhl">Speed H2L</MenuItem>
-                            <MenuItem value="speedlh">Speed L2H</MenuItem>
-                        </TextField>
-                    </div>
-                </div>
-                )}
 
-                <TableContainer component={Paper} sx={{ mt: 4, borderRadius: 3 }}>
-                    <Table className='mt-4 bordered-table'>
+                <TableContainer component={Paper} sx={{ borderRadius: 3 }} className='machine-list'>
+                    <Table size='small' className='mt-[10px] bordered-table'>
                         <TableHead>
                             <TableRow sx={{ backgroundColor: "#1976d2" }}>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Machine</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Efficiency</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Production</TableCell>
+                                {showBeamColumn && (<TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Beam (%)</TableCell>)}
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Speed</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Average</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Total Run</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Total Stop</TableCell>
-                                {/* <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Quality</TableCell> */}
+                                <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Quality</TableCell>
+                                <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Stopage</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -294,36 +242,62 @@ function Dashboard() {
                             {selectedGroup !== "all" && (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={7}
+                                        colSpan={10}
                                         sx={{
                                             backgroundColor: "#e3f2fd",
                                             fontWeight: "bold",
                                             fontSize: "16px",
                                             textAlign: "center"
+
                                         }}
                                     >
                                         {selectedGroup}
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {groupBy === "none" && Array.isArray(finalData) && finalData.map((item, index) => (
+                            {groupBy === "none" && Array.isArray(finalData) && filteredRangeData.map((item, index) => (
                                 <TableRow key={index} hover
                                     sx={{
-                                        backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff"
+                                        backgroundColor:
+                                            mode === "light" ? (index % 2 === 0 ? "#f9f9f9" : "#fff")
+                                                : (index % 2 === 0 ? "#2b2b2b" : "#3c3f41")
                                     }}>
                                     <TableCell>{item.ProductionMachine}</TableCell>
-                                    <TableCell align="center">{item.Efficiency}%</TableCell>
+                                    <TableCell align="center">
+                                        <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)} border border-solid align-middle`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
+                                        </div>
+                                    </TableCell>
                                     <TableCell align="center">{item.CumulativeProduction}</TableCell>
+                                    <TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
+                                        ? item.BeamPercentageUse
+                                        : ""}</TableCell>
                                     <TableCell align="center">{item.Speed}</TableCell>
                                     <TableCell align="center">{item.Average}</TableCell>
                                     <TableCell align="center">{item.TotalRun}</TableCell>
                                     <TableCell align="center">{item.TotalStop}</TableCell>
-                                    {/* <TableCell align="center">{item.Quality}</TableCell> */}
+                                    <TableCell align="center">{item.Quality}</TableCell>
+                                    <TableCell
+                                        align="center"
+                                        onClick={() => navigate("/breakage", {
+                                            state: {
+                                                fromdate: getCurrentDate(),
+                                                machineid: item.ProductionMachineID,
+                                                shiftid: item.ShiftID,
+                                                machinename: item.ProductionMachine
+                                            }
+                                        })}
+                                        sx={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
+                                    >{item.BrkCount}
+                                    </TableCell>
                                 </TableRow>
                             ))}
 
                             {groupBy === "groupname" &&
-                                Object.entries(groupedData).map(([groupName, machines]) => {
+                                Object.entries(groupedData).sort(([a], [b]) => {
+                                    const numA = parseInt(a.split(" ")[0]);
+                                    const numB = parseInt(b.split(" ")[0]);
+                                    return numA - numB;
+                                }).map(([groupName, machines]) => {
 
                                     const sortedMachines = getSortedData(machines);
                                     return (
@@ -331,14 +305,13 @@ function Dashboard() {
 
                                             <TableRow>
                                                 <TableCell
-                                                    colSpan={7}
+                                                    colSpan={10}
                                                     sx={{
                                                         backgroundColor: "#e3f2fd",
                                                         fontWeight: "bold",
                                                         fontSize: "16px",
                                                         textAlign: "center"
-                                                    }}
-                                                >
+                                                    }}>
                                                     {groupName}
                                                 </TableCell>
                                             </TableRow>
@@ -346,12 +319,20 @@ function Dashboard() {
                                             {sortedMachines.map((item, index) => (
                                                 <TableRow key={index} hover>
                                                     <TableCell>{item.ProductionMachine}</TableCell>
-                                                    <TableCell align="center">{item.Efficiency}%</TableCell>
+                                                    <TableCell align="center">
+                                                        <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
+                                                        </div>
+                                                    </TableCell>
                                                     <TableCell align="center">{item.CumulativeProduction}</TableCell>
+                                                    <TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
+                                                        ? item.BeamPercentageUse
+                                                        : ""}</TableCell>
                                                     <TableCell align="center">{item.Speed}</TableCell>
                                                     <TableCell align="center">{item.Average || "-"}</TableCell>
                                                     <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                     <TableCell align="center">{item.TotalStop || "-"}</TableCell>
+                                                    <TableCell align="center">{item.Quality || "-"}</TableCell>
+                                                    <TableCell align="center">{item.BrkCount}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </React.Fragment>
@@ -359,14 +340,14 @@ function Dashboard() {
                                 })
                             }
 
-                            {groupBy === "efficiency" && Object.entries(groupedDatabyEfficiency).map(([groupName, items]) => {
+                            {groupBy === "efficiency" && Object.entries(groupedDatabyEfficiency).sort(([a], [b]) => groupOrder.indexOf(a) - groupOrder.indexOf(b)).map(([groupName, items]) => {
 
                                 const sortedItems = getSortedData(items);
 
                                 return (
                                     <React.Fragment key={groupName}>
                                         <TableRow>
-                                            <TableCell colSpan={7} style={{ fontWeight: "bold", textAlign: "center" }}>
+                                            <TableCell colSpan={10} style={{ fontWeight: "bold", textAlign: "center" }}>
                                                 {groupName}
                                             </TableCell>
                                         </TableRow>
@@ -374,12 +355,20 @@ function Dashboard() {
                                         {sortedItems.map((item, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{item.ProductionMachine}</TableCell>
-                                                <TableCell align="center">{item.Efficiency}%</TableCell>
+                                                <TableCell align="center">
+                                                    <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell align="center">{item.CumulativeProduction}</TableCell>
+                                                <TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
+                                                    ? item.BeamPercentageUse
+                                                    : ""}</TableCell>
                                                 <TableCell align="center">{item.Speed}</TableCell>
                                                 <TableCell align="center">{item.Average || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalStop || "-"}</TableCell>
+                                                <TableCell align="center">{item.Quality || "-"}</TableCell>
+                                                <TableCell align="center">{item.BrkCount}</TableCell>
                                             </TableRow>
                                         ))}
                                     </React.Fragment>
@@ -393,7 +382,7 @@ function Dashboard() {
                                 return (
                                     <React.Fragment key={groupName}>
                                         <TableRow>
-                                            <TableCell colSpan={7} style={{ fontWeight: "bold", textAlign: "center" }}>
+                                            <TableCell colSpan={10} style={{ fontWeight: "bold", textAlign: "center" }}>
                                                 {groupName}
                                             </TableCell>
                                         </TableRow>
@@ -401,12 +390,20 @@ function Dashboard() {
                                         {sortedItems.map((item, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{item.ProductionMachine}</TableCell>
-                                                <TableCell align="center">{item.Efficiency}%</TableCell>
+                                                <TableCell align="center">
+                                                    <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell align="center">{item.CumulativeProduction}</TableCell>
+                                                <TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
+                                                    ? item.BeamPercentageUse
+                                                    : ""}</TableCell>
                                                 <TableCell align="center">{item.Speed}</TableCell>
                                                 <TableCell align="center">{item.Average || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalStop || "-"}</TableCell>
+                                                <TableCell align="center">{item.Quality || "-"}</TableCell>
+                                                <TableCell align="center">{item.BrkCount}</TableCell>
                                             </TableRow>
                                         ))}
                                     </React.Fragment>
@@ -417,7 +414,7 @@ function Dashboard() {
                 </TableContainer>
             </div>
 
-        </div>
+        </div >
     )
 }
 

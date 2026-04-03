@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import { Paper, Typography, Grid, TextField, Button } from '@mui/material';
+import { useData } from "../../context/DataContext";
 
 function CompanyDetails() {
+    const {
+            runningCount,
+            stoppedCount,
+            totalCount,
+            avgEfficiency,
+            avgSpeed,
+            statusFilter,
+            setStatusFilter
+        } = useData();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState({
         company_id: "",
@@ -12,22 +22,33 @@ function CompanyDetails() {
         company_code: "",
         company_address: "",
     })
-    const [statusFilter, setStatusFilter] = useState("all");
     const [showFilter, setShowFilter] = useState(false);
     const [machines, setMachines] = useState([]);
 
-    const runningCount = machines.filter(item => item.IsRun === true || item.IsRun === "true").length;
-    const stoppedCount = machines.filter(item => item.IsRun === false || item.IsRun === "false").length;
-    const totalCount = machines.length;
+
+    const getDaysLeft = (date) => {
+        if (!date) return "";
+
+        const today = new Date();
+        const expiry = new Date(date);
+
+        today.setHours(0, 0, 0, 0);
+        expiry.setHours(0, 0, 0, 0);
+
+        const diffTime = expiry - today;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    const getLicenseText = (date) => {
+        const days = getDaysLeft(date);
+
+        if (days < 0) return "Expired ❌";
+        if (days <= 7) return `${days} days (Expiring Soon ⚠️)`;
+        return `${days} Days (Active ✅)`;
+    };
 
     useEffect(() => {
         fetchUserData();
-        fetchData();
-        const interval = setInterval(() => {
-            fetchData();
-        }, 5000);
-
-        return () => clearInterval(interval);
     }, []);
 
     const fetchUserData = async () => {
@@ -62,32 +83,10 @@ function CompanyDetails() {
         }
     };
 
-    const fetchData = async () => {
-        const EMB_URL = import.meta.env.VITE_EMB_URL;
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${EMB_URL}/api/data/getliveproductionOld`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-        });
-
-        const data = await res.json();
-        console.log(data.ResultData);
-
-        if (res.ok) {
-            setMachines(data.ResultData.LiveProductionData);
-        }
-    };
+   
     return (
         <div className='pt-4'>
-            <Navbar runningCount={runningCount}
-                stoppedCount={stoppedCount}
-                totalCount={totalCount}
-                setStatusFilter={setStatusFilter}
-                statusFilter={statusFilter}
+            <Navbar
                 showFilter={showFilter}
                 setShowFilter={setShowFilter} />
             <div className='pt-[100px]'>
@@ -122,6 +121,9 @@ function CompanyDetails() {
                                         setUser({ ...user, register_date: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -134,7 +136,22 @@ function CompanyDetails() {
                                         setUser({ ...user, license_date: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </Grid>
 
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="License Expire Time"
+                                    name="license_expire"
+                                    value={`${getLicenseText(user.license_date)}`}
+                                    fullWidth
+                                    required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -147,6 +164,9 @@ function CompanyDetails() {
                                         setUser({ ...user, company_name: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -159,6 +179,9 @@ function CompanyDetails() {
                                         setUser({ ...user, company_code: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -171,6 +194,9 @@ function CompanyDetails() {
                                         setUser({ ...user, company_address: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
                         </Grid>

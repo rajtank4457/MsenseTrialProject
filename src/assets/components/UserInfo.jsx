@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './Navbar'
 import { Paper, Typography, Grid, TextField, Button } from '@mui/material'
+import { useData } from "../../context/DataContext";
 
 function UserInfo() {
+    const { tableData } = useData();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState({
         first_name: "",
@@ -12,20 +14,13 @@ function UserInfo() {
     })
     const [statusFilter, setStatusFilter] = useState("all");
     const [showFilter, setShowFilter] = useState(false);
-    const [machines, setMachines] = useState([]);
 
-    const runningCount = machines.filter(item => item.IsRun === true || item.IsRun === "true").length;
-    const stoppedCount = machines.filter(item => item.IsRun === false || item.IsRun === "false").length;
-    const totalCount = machines.length;
+    const runningCount = tableData.filter(item => item.IsRun === true || item.IsRun === "true").length;
+    const stoppedCount = tableData.filter(item => item.IsRun === false || item.IsRun === "false").length;
+    const totalCount = tableData.length;
 
     useEffect(() => {
         fetchUserData();
-        fetchData();
-        const interval = setInterval(() => {
-            fetchData();
-        }, 5000);
-
-        return () => clearInterval(interval);
     }, []);
 
     const fetchUserData = async () => {
@@ -57,25 +52,6 @@ function UserInfo() {
             console.error("Error fetching user:", error);
         }
     };
-    const fetchData = async () => {
-        const EMB_URL = import.meta.env.VITE_EMB_URL;
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${EMB_URL}/api/data/getliveproductionOld`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-        });
-
-        const data = await res.json();
-        console.log(data.ResultData);
-
-        if (res.ok) {
-            setMachines(data.ResultData.LiveProductionData);
-        }
-    };
 
     return (
         <div className='pt-4'>
@@ -103,6 +79,9 @@ function UserInfo() {
                                         setUser({ ...user, first_name: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -115,6 +94,9 @@ function UserInfo() {
                                         setUser({ ...user, last_name: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
 
@@ -142,6 +124,9 @@ function UserInfo() {
                                         setUser({ ...user, phone_number: e.target.value })}
                                     fullWidth
                                     required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
                         </Grid>

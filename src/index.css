@@ -1,3 +1,174 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.progress-container {
+    position: relative;
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 15px;
+    appearance: none;
+}
+
+/* TEXT INSIDE */
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+/* DEFAULT BACKGROUND */
+progress::-webkit-progress-bar {
+    background-color: #ddd;
+    border-radius: 10px;
+}
+
+/* GREEN */
+progress.green::-webkit-progress-value {
+    background-color: rgb(38, 222, 130);
+}
+
+/* Blue */
+progress.blue::-webkit-progress-value {
+    background-color: rgb(75, 206, 250);
+}
+
+/* Purple */
+progress.purple::-webkit-progress-value {
+    background-color: rgb(215, 162, 232);
+}
+
+/* Orange */
+progress.orange::-webkit-progress-value {
+    background-color: rgb(245, 205, 120);
+}
+
+/* RED */
+progress.red::-webkit-progress-value {
+    background-color: rgb(255, 184, 184);
+}
+
+/* ===== Container ===== */
+.machine-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px;
+}
+
+/* ===== Card ===== */
+.machine-card {
+    width: 138px !important;
+    border-radius: 12px !important;
+    cursor: pointer;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2) !important;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+}
+
+.machine-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ===== Header ===== */
+.machine-card .MuiCardHeader-root {
+
+    color: white;
+    text-align: center;
+    padding: 6px !important;
+}
+
+.machine-card .MuiCardHeader-title {
+    font-size: 14px !important;
+    font-weight: 600;
+}
+
+/* remove extra spacing */
+.machine-card .MuiCardHeader-content {
+    text-align: center;
+}
+
+/* ===== Card Content ===== */
+.machine-card .MuiCardContent-root {
+    padding: 2px !important;
+}
+
+/* ===== Table ===== */
+.machine-card .MuiTable-root {
+    width: 100%;
+}
+
+/* rows */
+.machine-card .MuiTableRow-root {
+    height: 20px;
+}
+
+/* cells */
+.machine-card .MuiTableCell-root {
+    padding: 2px 6px !important;
+    font-size: 13px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* left column (labels) */
+.machine-card .MuiTableCell-root:first-child {
+    color: #222;
+    font-weight: 500;
+}
+
+/* right column (values) */
+.machine-card .MuiTableCell-root:last-child {
+    text-align: right;
+    font-weight: 600;
+}
+
+/* ===== Quality ellipsis ===== */
+.machine-card .ellipsis {
+    max-width: 45px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== Optional: Status Colors ===== */
+
+/* Low efficiency */
+.machine-card.low {
+    border: 2px solid #e53935;
+}
+
+/* Medium */
+.machine-card.medium {
+    border: 2px solid #fbc02d;
+}
+
+/* High */
+.machine-card.high {
+    border: 2px solid #43a047;
+}
+
+/* ===== Table ===== */
+.machine-list .MuiTable-root {
+    width: 100%;
+}
+
+/* rows */
+.machine-list .MuiTableRow-root {
+    height: 20px;
+}
+
+/* cells */
+.machine-list .MuiTableCell-root {
+    padding: 0px 6px !important;
+    font-size: 13px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
