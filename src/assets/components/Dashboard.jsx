@@ -11,11 +11,9 @@ import {
     MenuItem,
     Button
 } from "@mui/material";
-import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
 import { useData } from "../../context/DataContext";
 import { useThemeContext } from "../../context/ThemeContext";
-
 
 function Dashboard() {
     const { mode } = useThemeContext();
@@ -28,12 +26,11 @@ function Dashboard() {
         effCounts,
     } = useData();
     const navigate = useNavigate();
-    const [showFilter, setShowFilter] = useState(false);
 
     const showBeamColumn = tableData.some(
         item => item.IsShowBeam === true || item.IsShowBeam === "true"
     );
-
+    
     const groupOrder = [
         "90 - 100",
         "80 - 90",
@@ -216,9 +213,6 @@ function Dashboard() {
 
     return (
         <div className='text-center pt-4 '>
-            <Navbar
-                showFilter={showFilter}
-                setShowFilter={setShowFilter} />
             <div>
 
                 <TableContainer component={Paper} sx={{ borderRadius: 3 }} className='machine-list'>
@@ -231,9 +225,10 @@ function Dashboard() {
                                 {showBeamColumn && (<TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Beam (%)</TableCell>)}
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Speed</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Average</TableCell>
+                                <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Duration</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Total Run</TableCell>
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Total Stop</TableCell>
-                                <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Quality</TableCell>
+                                {showBeamColumn && (<TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Quality</TableCell>)}
                                 <TableCell sx={{ color: "#fff", fontWeight: "bold" }} align="center">Stopage</TableCell>
                             </TableRow>
                         </TableHead>
@@ -262,28 +257,40 @@ function Dashboard() {
                                             mode === "light" ? (index % 2 === 0 ? "#f9f9f9" : "#fff")
                                                 : (index % 2 === 0 ? "#2b2b2b" : "#3c3f41")
                                     }}>
-                                    <TableCell>{item.ProductionMachine}</TableCell>
+                                    <TableCell>{item.ProductionMachineCode}</TableCell>
                                     <TableCell align="center">
                                         <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)} border border-solid align-middle`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
                                         </div>
                                     </TableCell>
                                     <TableCell align="center">{item.CumulativeProduction}</TableCell>
-                                    <TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
+                                    {showBeamColumn && (<TableCell align="center">{(item.IsShowBeam === true || item.IsShowBeam === "true")
                                         ? item.BeamPercentageUse
-                                        : ""}</TableCell>
+                                        : ""}</TableCell>)}
                                     <TableCell align="center">{item.Speed}</TableCell>
                                     <TableCell align="center">{item.Average}</TableCell>
-                                    <TableCell align="center">{item.TotalRun}</TableCell>
-                                    <TableCell align="center">{item.TotalStop}</TableCell>
-                                    <TableCell align="center">{item.Quality}</TableCell>
-                                    <TableCell
-                                        align="center"
-                                        onClick={() => navigate("/breakage", {
+                                    <TableCell align="center" sx={{
+                                        color: item.IsRun ? "#2e7d32" : "#e16b6b"
+                                    }}>{item.Duration}</TableCell>
+                                    <TableCell align="center"
+                                        onClick={() => navigate(`/rundetail/${item.ProductionMachineID}`, {
                                             state: {
                                                 fromdate: getCurrentDate(),
                                                 machineid: item.ProductionMachineID,
                                                 shiftid: item.ShiftID,
-                                                machinename: item.ProductionMachine
+                                                machinename: item.ProductionMachineCode
+                                            }
+                                        })}
+                                        sx={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}>{item.TotalRun}</TableCell>
+                                    <TableCell align="center">{item.TotalStop}</TableCell>
+                                    {showBeamColumn && (<TableCell align="center">{item.Quality}</TableCell>)}
+                                    <TableCell
+                                        align="center"
+                                        onClick={() => navigate(`/breakage/${item.ProductionMachineID}`, {
+                                            state: {
+                                                fromdate: getCurrentDate(),
+                                                machineid: item.ProductionMachineID,
+                                                shiftid: item.ShiftID,
+                                                machinename: item.ProductionMachineCode
                                             }
                                         })}
                                         sx={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
@@ -318,7 +325,7 @@ function Dashboard() {
 
                                             {sortedMachines.map((item, index) => (
                                                 <TableRow key={index} hover>
-                                                    <TableCell>{item.ProductionMachine}</TableCell>
+                                                    <TableCell>{item.ProductionMachineCode}</TableCell>
                                                     <TableCell align="center">
                                                         <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
                                                         </div>
@@ -354,7 +361,7 @@ function Dashboard() {
 
                                         {sortedItems.map((item, index) => (
                                             <TableRow key={index}>
-                                                <TableCell>{item.ProductionMachine}</TableCell>
+                                                <TableCell>{item.ProductionMachineCode}</TableCell>
                                                 <TableCell align="center">
                                                     <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
                                                     </div>
@@ -389,7 +396,7 @@ function Dashboard() {
 
                                         {sortedItems.map((item, index) => (
                                             <TableRow key={index}>
-                                                <TableCell>{item.ProductionMachine}</TableCell>
+                                                <TableCell>{item.ProductionMachineCode}</TableCell>
                                                 <TableCell align="center">
                                                     <div className="progress-container"><progress className={`progress-bar ${getEfficiencyClass(item.Efficiency)}`} value={item.Efficiency} max={100} /><span className="progress-text">{item.Efficiency}%</span>
                                                     </div>

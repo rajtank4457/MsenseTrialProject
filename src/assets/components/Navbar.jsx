@@ -10,9 +10,10 @@ import { useData } from "../../context/DataContext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { useThemeContext } from "../../context/ThemeContext";
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
-
-function Navbar({ showFilter, setShowFilter }) {
+function Navbar({ showFilter, setShowFilter, handle }) {
     const { mode, toggleTheme } = useThemeContext();
     const {
         runningCount,
@@ -26,8 +27,10 @@ function Navbar({ showFilter, setShowFilter }) {
         statusFilter, setStatusFilter,
         tableData,
         setSelectedRange,
+        selectedRange,
         effCounts,
     } = useData();
+
 
     const groupOptions = [...new Set(tableData.map(item => item.DeviceGroup))];
 
@@ -76,7 +79,7 @@ function Navbar({ showFilter, setShowFilter }) {
 
     return (
         <nav>
-            <div className='bg-[#9696923c]'>
+            <div>
 
                 {/* ✅ ROW 1 (MAIN NAVBAR) */}
                 <div className="flex items-center px-4 h-[55px]">
@@ -143,6 +146,17 @@ function Navbar({ showFilter, setShowFilter }) {
                     {/* RIGHT SIDE */}
                     <div className="flex items-center gap-4">
                         <Button onClick={() => setShowFilter(!showFilter)}>Filter</Button>
+                        {handle.active ? (
+                            <FullscreenExitIcon
+                                onClick={handle.exit}
+                                className="cursor-pointer text-blue-500"
+                            />
+                        ) : (
+                            <FullscreenIcon
+                                onClick={handle.enter}
+                                className="cursor-pointer text-blue-500"
+                            />
+                        )}
 
                         <Tooltip title="Account settings">
                             <IconButton onClick={handleClick} size="small">
@@ -157,7 +171,7 @@ function Navbar({ showFilter, setShowFilter }) {
 
                 {/* ✅ ROW 2 (FILTER SECTION) */}
                 {showFilter && (
-                    <div className="flex items-center justify-between px-4 py-3 border-t">
+                    <div className="flex items-center justify-between px-4 py-3">
 
                         {/* ✅ LEFT SIDE (CARD BUTTON) */}
                         <div>
@@ -168,52 +182,70 @@ function Navbar({ showFilter, setShowFilter }) {
                             </div>
                         </div>
 
-                        <div className='flex justify-center ml-[150px] gap-2'>
+                        <div className='flex justify-center ml-[100px] gap-2'>
 
                             {/* ALL */}
                             <div onClick={() => setSelectedRange("all")}
-                                className={`border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#3c3f41] hover:bg-black`}
+                                className={`relative border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#3c3f41] hover:bg-black`}
                             >
+                                {selectedRange === "all" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{totalCount}</p>
                                 <p className="text-xs">All</p>
                             </div>
 
                             {/* 90-100 */}
                             <div onClick={() => setSelectedRange("90-100")}
-                                className={`border rounded-lg px-6 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#26de81] hover:bg-[#11c269]`}
+                                className={`relative border rounded-lg px-6 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#26de81] hover:bg-[#11c269]`}
                             >
+                                {selectedRange === "90-100" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{effCounts?.["90-100"]}</p>
                                 <p className="text-xs">100-90</p>
                             </div>
 
                             {/* 80-90 */}
                             <div onClick={() => setSelectedRange("80-90")}
-                                className={`border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#4bcffa] hover:bg-[#25a3cd]`}
+                                className={`relative border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#4bcffa] hover:bg-[#25a3cd]`}
                             >
+                                {selectedRange === "80-90" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{effCounts?.["80-90"]}</p>
                                 <p className="text-xs">90-80</p>
                             </div>
 
                             {/* 70-80 */}
                             <div onClick={() => setSelectedRange("70-80")}
-                                className={`border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#d6a2e8] hover:bg-[#a667bb]`}
+                                className={`relative border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#d6a2e8] hover:bg-[#a667bb]`}
                             >
+                                {selectedRange === "70-80" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{effCounts?.["70-80"]}</p>
                                 <p className="text-xs">80-70</p>
                             </div>
 
                             {/* 60-70 */}
                             <div onClick={() => setSelectedRange("60-70")}
-                                className={`border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#f5cd79] hover:bg-[#cca551]`}
+                                className={`relative border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#f5cd79] hover:bg-[#cca551]`}
                             >
+                                {selectedRange === "60-70" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{effCounts?.["60-70"]}</p>
                                 <p className="text-xs">70-60</p>
                             </div>
 
                             {/* 0-60 */}
                             <div onClick={() => setSelectedRange("below-60")}
-                                className={`border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#feb7b7] hover:bg-[#c95d5d]`}
+                                className={`relative border rounded-lg px-8 py-[2px] text-center text-white cursor-pointer shadow-md bg-[#feb7b7] hover:bg-[#c95d5d]`}
                             >
+                                {selectedRange === "below-60" && (
+                                    <span className="absolute top-1 left-2 text-sm">✅</span>
+                                )}
                                 <p className="text-lg font-bold">{effCounts?.["0-60"]}</p>
                                 <p className="text-xs">60-0</p>
                             </div>
@@ -277,6 +309,21 @@ function Navbar({ showFilter, setShowFilter }) {
                     </div>
                 )}
 
+                {showFilter && (
+                    <div className="flex items-center justify-end px-4 py-3">
+                        <div
+                            className={`border rounded-lg px-3 py-[2px] text-center cursor-pointer border-blue-500`}
+                        >
+                            <p className="text-2xl">+</p>
+                        </div>
+                        <div
+                            className={`border rounded-lg px-3 py-[2px] text-center cursor-pointer border-blue-500`}
+                        >
+                            <p className="text-2xl">-</p>
+                        </div>
+                    </div>
+                )}
+
                 <Menu
                     anchorEl={anchorEl}
                     id="account-menu"
@@ -285,6 +332,8 @@ function Navbar({ showFilter, setShowFilter }) {
                     onClick={handleClose}
                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    disablePortal
+                    container={document.fullscreenElement}
                 >
                     <MenuItem onClick={handleProfile}>
                         <Avatar /> Profile
@@ -295,10 +344,10 @@ function Navbar({ showFilter, setShowFilter }) {
                     <Divider />
                     <MenuItem onClick={toggleTheme}>
                         <ListItemIcon>
-                            {mode === "dark" ? <DarkModeIcon /> : <LightModeIcon />}
+                            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
                         </ListItemIcon>
                         <ListItemText>
-                            {mode === "dark" ? "Dark Mode" : "Light Mode"}
+                            {mode === "dark" ? "Light Mode" : "Dark Mode"}
                         </ListItemText>
 
                         <Switch checked={mode === "dark"} />

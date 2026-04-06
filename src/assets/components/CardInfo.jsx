@@ -1,7 +1,6 @@
 import React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Navbar from './Navbar';
 import {
     Table,
     TableRow,
@@ -31,14 +30,13 @@ export default function CardInfo() {
     const [selectedMachineId, setSelectedMachineId] = useState(null);
     const [open, setOpen] = useState(false);
 
-    const runningCount = tableData.filter(item => item.IsRun === true || item.IsRun === "true").length;
-    const stoppedCount = tableData.filter(item => item.IsRun === false || item.IsRun === "false").length;
-    const totalCount = tableData.length;
 
-
+    const showBeamColumn = tableData.some(
+        item => item.IsShowBeam === true || item.IsShowBeam === "true"
+    );
 
     const handleOpen = (machine) => {
-        setSelectedMachineId(machine.ProductionMachine);
+        setSelectedMachineId(machine.ProductionMachineCode);
         setOpen(true);
     };
 
@@ -204,17 +202,11 @@ export default function CardInfo() {
     const filteredRangeData = getFilteredRangeData(finalData);
 
     const selectedMachine = finalData.find(
-        m => m.ProductionMachine === selectedMachineId
+        m => m.ProductionMachineCode === selectedMachineId
     );
 
     return (
         <div className='pt-4'>
-            <Navbar runningCount={runningCount}
-                stoppedCount={stoppedCount}
-                totalCount={totalCount}
-                showFilter={showFilter}
-                setShowFilter={setShowFilter}
-            />
 
             <div className="machine-container">
                 {groupBy === "none" && filteredRangeData.map((machine, index) => (
@@ -226,7 +218,7 @@ export default function CardInfo() {
                         <CardHeader title={
                             <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
                                 <div className='flex items-center'>
-                                    {machine.ProductionMachine}
+                                    {machine.ProductionMachineCode}
                                 </div>
                                 <div className='ml-auto'>
                                     {machine.IsRun ? (
@@ -284,12 +276,12 @@ export default function CardInfo() {
                                         <TableCell>{machine.TotalStop}</TableCell>
                                     </TableRow>
 
-                                    <TableRow>
+                                    {showBeamColumn && (<TableRow>
                                         <TableCell>Quality</TableCell>
                                         <TableCell className="ellipsis">
                                             {machine.Quality}
                                         </TableCell>
-                                    </TableRow>
+                                    </TableRow> )}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -340,7 +332,7 @@ export default function CardInfo() {
                                             <CardHeader title={
                                                 <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
                                                     <div className='flex items-center'>
-                                                        {machine.ProductionMachine}
+                                                        {machine.ProductionMachineCode}
                                                     </div>
                                                     <div className='ml-auto'>
                                                         {machine.IsRun ? (
@@ -398,12 +390,12 @@ export default function CardInfo() {
                                                             <TableCell>{machine.TotalStop}</TableCell>
                                                         </TableRow>
 
-                                                        <TableRow>
+                                                        {showBeamColumn && (<TableRow>
                                                             <TableCell>Quality</TableCell>
                                                             <TableCell className="ellipsis">
                                                                 {machine.Quality}
                                                             </TableCell>
-                                                        </TableRow>
+                                                        </TableRow>)}
                                                     </TableBody>
                                                 </Table>
                                             </CardContent>
@@ -452,7 +444,7 @@ export default function CardInfo() {
                                         <CardHeader title={
                                             <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
                                                 <div className='flex items-center'>
-                                                    {machine.ProductionMachine}
+                                                    {machine.ProductionMachineCode}
                                                 </div>
                                                 <div className='ml-auto'>
                                                     {machine.IsRun ? (
@@ -510,12 +502,12 @@ export default function CardInfo() {
                                                         <TableCell>{machine.TotalStop}</TableCell>
                                                     </TableRow>
 
-                                                    <TableRow>
+                                                    {showBeamColumn && (<TableRow>
                                                         <TableCell>Quality</TableCell>
                                                         <TableCell className="ellipsis">
                                                             {machine.Quality}
                                                         </TableCell>
-                                                    </TableRow>
+                                                    </TableRow>)}
                                                 </TableBody>
                                             </Table>
                                         </CardContent>
@@ -564,7 +556,7 @@ export default function CardInfo() {
                                         <CardHeader title={
                                             <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
                                                 <div className='flex items-center'>
-                                                    {machine.ProductionMachine}
+                                                    {machine.ProductionMachineCode}
                                                 </div>
                                                 <div className='ml-auto'>
                                                     {machine.IsRun ? (
@@ -622,12 +614,12 @@ export default function CardInfo() {
                                                         <TableCell>{machine.TotalStop}</TableCell>
                                                     </TableRow>
 
-                                                    <TableRow>
+                                                    {showBeamColumn && (<TableRow>
                                                         <TableCell>Quality</TableCell>
                                                         <TableCell className="ellipsis">
                                                             {machine.Quality}
                                                         </TableCell>
-                                                    </TableRow>
+                                                    </TableRow>)}
                                                 </TableBody>
                                             </Table>
                                         </CardContent>
@@ -647,7 +639,7 @@ export default function CardInfo() {
                                     title={
                                         <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
                                             <div className='flex items-center'>
-                                                {selectedMachine.ProductionMachine}
+                                                {selectedMachine.ProductionMachineCode}
                                             </div>
                                             <div className='ml-auto'>
                                                 {selectedMachine.IsRun ? (
@@ -701,10 +693,10 @@ export default function CardInfo() {
                                                 <TableCell>Total Stop</TableCell>
                                                 <TableCell align="right">{selectedMachine.TotalStop}</TableCell>
                                             </TableRow>
-                                            <TableRow>
+                                            {showBeamColumn && (<TableRow>
                                                 <TableCell>Quality</TableCell>
                                                 <TableCell align="right">{selectedMachine.Quality}</TableCell>
-                                            </TableRow>
+                                            </TableRow>)}
                                         </TableBody>
                                     </Table>
                                 </CardContent>

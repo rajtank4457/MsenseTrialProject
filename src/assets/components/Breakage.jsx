@@ -102,19 +102,19 @@ function Breakage() {
                 <Table className='bordered-table'>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: "#1976d2" }}>
-                            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Sr No.</TableCell>
-                            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>From</TableCell>
-                            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Upto</TableCell>
-                            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Duration</TableCell>
+                            <TableCell sx={{ color: "#fff", fontWeight: "bold", textAlign: "Center" }}>Sr No.</TableCell>
+                            <TableCell sx={{ color: "#fff", fontWeight: "bold", textAlign: "Center" }}>From</TableCell>
+                            <TableCell sx={{ color: "#fff", fontWeight: "bold", textAlign: "Center" }}>Upto</TableCell>
+                            <TableCell sx={{ color: "#fff", fontWeight: "bold", textAlign: "Center" }}>Duration</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {breakageData.map((item, index) => (
                             <TableRow key={index}>
-                                <TableCell>{item.SrNo}</TableCell>
-                                <TableCell>{item.BreakageFromTime}</TableCell>
-                                <TableCell>{item.BreakageEndTime}</TableCell>
-                                <TableCell>{getDuration(item.FromTime, item.EndTime)}</TableCell>
+                                <TableCell sx={{ textAlign: "Center" }}>{item.SrNo}</TableCell>
+                                <TableCell sx={{ textAlign: "Center" }}>{item.BreakageFromTime}</TableCell>
+                                <TableCell sx={{ textAlign: "Center" }}>{item.BreakageEndTime}</TableCell>
+                                <TableCell sx={{ textAlign: "Center" }}>{getDuration(item.FromTime, item.EndTime)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

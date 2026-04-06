@@ -4,17 +4,21 @@ import { createTheme } from "@mui/material/styles";
 const ThemeContext = createContext();
 
 export const ThemeProviderCustom = ({ children }) => {
-  const [mode, setMode] = useState("light");
+  const [mode, setMode] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
 
-  // Load saved theme
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) setMode(saved);
-  }, []);
 
   // Save theme
   useEffect(() => {
     localStorage.setItem("theme", mode);
+
+    if (mode === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
   }, [mode]);
 
   const toggleTheme = () => {
