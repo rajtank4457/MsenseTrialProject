@@ -24,13 +24,14 @@ function Dashboard() {
         statusFilter,
         selectedRange, setSelectedRange,
         effCounts,
+        fontScale
     } = useData();
     const navigate = useNavigate();
 
     const showBeamColumn = tableData.some(
         item => item.IsShowBeam === true || item.IsShowBeam === "true"
     );
-    
+
     const groupOrder = [
         "90 - 100",
         "80 - 90",
@@ -212,9 +213,8 @@ function Dashboard() {
 
 
     return (
-        <div className='text-center pt-4 '>
+        <div className='text-center pt-4 ' style={{ fontSize: `${fontScale}rem` }} >
             <div>
-
                 <TableContainer component={Paper} sx={{ borderRadius: 3 }} className='machine-list'>
                     <Table size='small' className='mt-[10px] bordered-table'>
                         <TableHead>
@@ -233,23 +233,6 @@ function Dashboard() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-
-                            {selectedGroup !== "all" && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={10}
-                                        sx={{
-                                            backgroundColor: "#e3f2fd",
-                                            fontWeight: "bold",
-                                            fontSize: "16px",
-                                            textAlign: "center"
-
-                                        }}
-                                    >
-                                        {selectedGroup}
-                                    </TableCell>
-                                </TableRow>
-                            )}
                             {groupBy === "none" && Array.isArray(finalData) && filteredRangeData.map((item, index) => (
                                 <TableRow key={index} hover
                                     sx={{
@@ -269,7 +252,7 @@ function Dashboard() {
                                     <TableCell align="center">{item.Speed}</TableCell>
                                     <TableCell align="center">{item.Average}</TableCell>
                                     <TableCell align="center" sx={{
-                                        color: item.IsRun ? "#2e7d32" : "#e16b6b"
+                                        color: item.IsRun ? "#26de82" : "#e16b6b"
                                     }}>{item.Duration}</TableCell>
                                     <TableCell align="center"
                                         onClick={() => navigate(`/rundetail/${item.ProductionMachineID}`, {
@@ -312,12 +295,12 @@ function Dashboard() {
 
                                             <TableRow>
                                                 <TableCell
-                                                    colSpan={10}
+                                                    colSpan={15}
                                                     sx={{
                                                         backgroundColor: "#e3f2fd",
                                                         fontWeight: "bold",
                                                         fontSize: "16px",
-                                                        textAlign: "center"
+                                                        textAlign: "center",
                                                     }}>
                                                     {groupName}
                                                 </TableCell>
@@ -336,6 +319,9 @@ function Dashboard() {
                                                         : ""}</TableCell>
                                                     <TableCell align="center">{item.Speed}</TableCell>
                                                     <TableCell align="center">{item.Average || "-"}</TableCell>
+                                                    <TableCell align="center" sx={{
+                                                        color: item.IsRun ? "#26de82" : "#e16b6b"
+                                                    }}>{item.Duration}</TableCell>
                                                     <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                     <TableCell align="center">{item.TotalStop || "-"}</TableCell>
                                                     <TableCell align="center">{item.Quality || "-"}</TableCell>
@@ -354,7 +340,7 @@ function Dashboard() {
                                 return (
                                     <React.Fragment key={groupName}>
                                         <TableRow>
-                                            <TableCell colSpan={10} style={{ fontWeight: "bold", textAlign: "center" }}>
+                                            <TableCell colSpan={15} style={{ fontWeight: "bold", textAlign: "center" }}>
                                                 {groupName}
                                             </TableCell>
                                         </TableRow>
@@ -372,6 +358,9 @@ function Dashboard() {
                                                     : ""}</TableCell>
                                                 <TableCell align="center">{item.Speed}</TableCell>
                                                 <TableCell align="center">{item.Average || "-"}</TableCell>
+                                                <TableCell align="center" sx={{
+                                                    color: item.IsRun ? "#26de82" : "#e16b6b"
+                                                }}>{item.Duration}</TableCell>
                                                 <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalStop || "-"}</TableCell>
                                                 <TableCell align="center">{item.Quality || "-"}</TableCell>
@@ -389,7 +378,7 @@ function Dashboard() {
                                 return (
                                     <React.Fragment key={groupName}>
                                         <TableRow>
-                                            <TableCell colSpan={10} style={{ fontWeight: "bold", textAlign: "center" }}>
+                                            <TableCell colSpan={15} style={{ fontWeight: "bold", textAlign: "center" }}>
                                                 {groupName}
                                             </TableCell>
                                         </TableRow>
@@ -407,6 +396,9 @@ function Dashboard() {
                                                     : ""}</TableCell>
                                                 <TableCell align="center">{item.Speed}</TableCell>
                                                 <TableCell align="center">{item.Average || "-"}</TableCell>
+                                                <TableCell align="center" sx={{
+                                                    color: item.IsRun ? "#26de82" : "#e16b6b"
+                                                }}>{item.Duration}</TableCell>
                                                 <TableCell align="center">{item.TotalRun || "-"}</TableCell>
                                                 <TableCell align="center">{item.TotalStop || "-"}</TableCell>
                                                 <TableCell align="center">{item.Quality || "-"}</TableCell>

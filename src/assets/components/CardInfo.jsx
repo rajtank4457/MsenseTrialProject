@@ -17,7 +17,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import { useThemeContext } from "../../context/ThemeContext";
 
 
-export default function CardInfo() {
+export default function CardInfo({ visibleFields, showLabels, fieldOrder }) {
     const { mode } = useThemeContext();
     const { tableData,
         sortBy, setSortBy,
@@ -25,11 +25,19 @@ export default function CardInfo() {
         selectedGroup, setSelectedGroup,
         statusFilter,
         selectedRange, setSelectedRange,
+        visibleCount,
+        counterCols,
+        fontScale,
     } = useData();
-    const [showFilter, setShowFilter] = useState(false);
     const [selectedMachineId, setSelectedMachineId] = useState(null);
     const [open, setOpen] = useState(false);
 
+    const getShortLabel = (label, visibleCount) => {
+        if (visibleCount >= 4) {
+            return label.slice(0, 3) + "...";
+        }
+        return label;
+    };
 
     const showBeamColumn = tableData.some(
         item => item.IsShowBeam === true || item.IsShowBeam === "true"
@@ -205,24 +213,59 @@ export default function CardInfo() {
         m => m.ProductionMachineCode === selectedMachineId
     );
 
-    return (
-        <div className='pt-4'>
+    const fieldConfig = {
+        efficiency: {
+            label: "Efficiency",
+            value: (machine) => `${machine.Efficiency}%`
+        },
+        production: {
+            label: "Production",
+            value: (machine) => machine.CumulativeProduction
+        },
+        speed: {
+            label: "Speed",
+            value: (machine) => machine.Speed
+        },
+        average: {
+            label: "Average",
+            value: (machine) => machine.Average
+        },
+        totalRun: {
+            label: "Total Run",
+            value: (machine) => machine.TotalRun
+        },
+        totalStop: {
+            label: "Total Stop",
+            value: (machine) => machine.TotalStop
+        },
+        quality: {
+            label: "Quality",
+            value: (machine) => machine.Quality
+        }
+    };
 
-            <div className="machine-container">
+    return (
+        <div className='pt-4' style={{ fontSize: `${fontScale}rem` }}>
+            <div className="machine-container" style={{
+                display: "grid",
+                gridTemplateColumns: `repeat( ${groupBy === "none" ? visibleCount : counterCols}, 1fr)`,
+                gap: "16px",
+            }}>
                 {groupBy === "none" && filteredRangeData.map((machine, index) => (
                     <Card
                         key={index}
                         className="machine-card"
                         onClick={() => handleOpen(machine)}
+                        style={{ minWidth: "100px" }}
                     >
                         <CardHeader title={
-                            <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
-                                <div className='flex items-center'>
+                            <div className='flex justify-start '>
+                                <div className='flex text-2xl justify-start items-center'>
                                     {machine.ProductionMachineCode}
                                 </div>
-                                <div className='ml-auto'>
+                                <div className='items-center ml-auto'>
                                     {machine.IsRun ? (
-                                        <PlayArrowIcon style={{ backgroundColor: "rgb(46, 125, 50)" }} />
+                                        <PlayArrowIcon style={{ fontSize: 30, backgroundColor: "rgb(46, 125, 50)" }} />
                                     ) : (
                                         <PauseIcon style={{ backgroundColor: "#b9b9b9" }} />
                                     )}
@@ -246,42 +289,26 @@ export default function CardInfo() {
                         }}>
                             <Table size="small">
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell>Efficiency</TableCell>
-                                        <TableCell>{machine.Efficiency}%</TableCell>
-                                    </TableRow>
+                                    {fieldOrder
+                                        .filter(field => visibleFields[field]) // show/hide
+                                        .map(field => {
+                                            // optional condition for quality
+                                            if (field === "quality" && !showBeamColumn) return null;
 
-                                    <TableRow>
-                                        <TableCell>Production</TableCell>
-                                        <TableCell>{machine.CumulativeProduction}</TableCell>
-                                    </TableRow>
+                                            return (
+                                                <TableRow key={field}>
+                                                    {showLabels && (
+                                                        <TableCell>
+                                                            {getShortLabel(fieldConfig[field].label, visibleCount)}
+                                                        </TableCell>
+                                                    )}
 
-                                    <TableRow>
-                                        <TableCell>Speed</TableCell>
-                                        <TableCell>{machine.Speed}</TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell>Average</TableCell>
-                                        <TableCell>{machine.Average}</TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell>Total Run</TableCell>
-                                        <TableCell>{machine.TotalRun}</TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell>Total Stop</TableCell>
-                                        <TableCell>{machine.TotalStop}</TableCell>
-                                    </TableRow>
-
-                                    {showBeamColumn && (<TableRow>
-                                        <TableCell>Quality</TableCell>
-                                        <TableCell className="ellipsis">
-                                            {machine.Quality}
-                                        </TableCell>
-                                    </TableRow> )}
+                                                    <TableCell>
+                                                        {fieldConfig[field].value(machine)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -299,7 +326,6 @@ export default function CardInfo() {
                         return (
                             <Box key={groupName} sx={{ width: '100%' }}>
 
-                                {/* The Group Header (Light Blue Bar) */}
                                 <Box
                                     sx={{
                                         backgroundColor:
@@ -317,8 +343,8 @@ export default function CardInfo() {
 
                                 <Box
                                     sx={{
-                                        display: 'flex',
-                                        flexWrap: 'wrap',
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat( ${visibleCount},1fr)`,
                                         gap: 2,
                                         p: 2,
                                     }}
@@ -328,6 +354,7 @@ export default function CardInfo() {
                                             key={index}
                                             className="machine-card"
                                             onClick={() => handleOpen(machine)}
+                                            style={{ minWidth: "100px" }}
                                         >
                                             <CardHeader title={
                                                 <div style={{ display: "flex", textAlign: "center", gap: "8px" }}>
@@ -356,46 +383,53 @@ export default function CardInfo() {
                                                             machine.Efficiency >= 70 && machine.Efficiency < 80 ? "rgb(215, 162, 232)" :
                                                                 machine.Efficiency >= 60 && machine.Efficiency < 70 ? "rgb(245, 205, 120)" :
                                                                     "rgb(255, 184, 184)",
-                                                color: "#fff"
+                                                color: "#fff",
                                             }}>
                                                 <Table size="small">
                                                     <TableBody>
-                                                        <TableRow>
-                                                            <TableCell>Efficiency</TableCell>
+                                                        {visibleFields.efficiency && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Efficiency", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.Efficiency}%</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        <TableRow>
-                                                            <TableCell>Production</TableCell>
+                                                        {visibleFields.production && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Production", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.CumulativeProduction}</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        <TableRow>
-                                                            <TableCell>Speed</TableCell>
+                                                        {visibleFields.speed && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Speed", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.Speed}</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        <TableRow>
-                                                            <TableCell>Average</TableCell>
+                                                        {visibleFields.average && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Average", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.Average}</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        <TableRow>
-                                                            <TableCell>Total Run</TableCell>
+                                                        {visibleFields.totalRun && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Total Run", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.TotalRun}</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        <TableRow>
-                                                            <TableCell>Total Stop</TableCell>
+                                                        {visibleFields.totalStop && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Total Stop", visibleCount)}</TableCell>}
                                                             <TableCell>{machine.TotalStop}</TableCell>
                                                         </TableRow>
+                                                        )}
 
-                                                        {showBeamColumn && (<TableRow>
-                                                            <TableCell>Quality</TableCell>
+                                                        {showBeamColumn && visibleFields.quality && (<TableRow>
+                                                            {showLabels && <TableCell>{getShortLabel("Quality", visibleCount)}</TableCell>}
                                                             <TableCell className="ellipsis">
                                                                 {machine.Quality}
                                                             </TableCell>
-                                                        </TableRow>)}
+                                                        </TableRow>
+                                                        )}
                                                     </TableBody>
                                                 </Table>
                                             </CardContent>
@@ -429,8 +463,8 @@ export default function CardInfo() {
 
                             <Box
                                 sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
+                                    display: 'grid',
+                                    gridTemplateColumns: `repeat(${visibleCount}, 1fr)`,
                                     gap: 2,
                                     p: 2, // Optional background for card area
                                 }}
@@ -472,42 +506,49 @@ export default function CardInfo() {
                                         }}>
                                             <Table size="small">
                                                 <TableBody>
-                                                    <TableRow>
-                                                        <TableCell>Efficiency</TableCell>
+                                                    {visibleFields.efficiency && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Efficiency", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Efficiency}%</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Production</TableCell>
+                                                    {visibleFields.production && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Production", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.CumulativeProduction}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Speed</TableCell>
+                                                    {visibleFields.speed && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Speed", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Speed}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Average</TableCell>
+                                                    {visibleFields.average && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Average", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Average}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Total Run</TableCell>
+                                                    {visibleFields.totalrun && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Total Run", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.TotalRun}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Total Stop</TableCell>
+                                                    {visibleFields.totalstop && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Total Stop", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.TotalStop}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    {showBeamColumn && (<TableRow>
-                                                        <TableCell>Quality</TableCell>
+                                                    {showBeamColumn && visibleFields.quality && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Quality", visibleCount)}</TableCell>}
                                                         <TableCell className="ellipsis">
                                                             {machine.Quality}
                                                         </TableCell>
-                                                    </TableRow>)}
+                                                    </TableRow>
+                                                    )}
                                                 </TableBody>
                                             </Table>
                                         </CardContent>
@@ -541,10 +582,10 @@ export default function CardInfo() {
 
                             <Box
                                 sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
+                                    display: 'grid',
+                                    gridTemplateColumns: `repeat(${visibleCount}, 1fr)`,
                                     gap: 2,
-                                    p: 2, // Optional background for card area
+                                    p: 2,
                                 }}
                             >
                                 {sortedItems.map((machine, index) => (
@@ -584,42 +625,49 @@ export default function CardInfo() {
                                         }}>
                                             <Table size="small">
                                                 <TableBody>
-                                                    <TableRow>
-                                                        <TableCell>Efficiency</TableCell>
+                                                    {visibleFields.efficiency && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Efficiency", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Efficiency}%</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Production</TableCell>
+                                                    {visibleFields.production && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Production", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.CumulativeProduction}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Speed</TableCell>
+                                                    {visibleFields.speed && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Speed", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Speed}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Average</TableCell>
+                                                    {visibleFields.average && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Average", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.Average}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Total Run</TableCell>
+                                                    {visibleFields.totalrun && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Total Run", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.TotalRun}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    <TableRow>
-                                                        <TableCell>Total Stop</TableCell>
+                                                    {visibleFields.totalstop && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Total Stop", visibleCount)}</TableCell>}
                                                         <TableCell>{machine.TotalStop}</TableCell>
                                                     </TableRow>
+                                                    )}
 
-                                                    {showBeamColumn && (<TableRow>
-                                                        <TableCell>Quality</TableCell>
+                                                    {showBeamColumn && visibleFields.quality && (<TableRow>
+                                                        {showLabels && <TableCell>{getShortLabel("Quality", visibleCount)}</TableCell>}
                                                         <TableCell className="ellipsis">
                                                             {machine.Quality}
                                                         </TableCell>
-                                                    </TableRow>)}
+                                                    </TableRow>
+                                                    )}
                                                 </TableBody>
                                             </Table>
                                         </CardContent>

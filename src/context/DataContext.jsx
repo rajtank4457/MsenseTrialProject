@@ -21,6 +21,29 @@ export const DataProvider = ({ children }) => {
         "60-70": 0,
         "0-60": 0,
     });
+    const [visibleCount, setVisibleCount] = useState(() => {
+        const saved = localStorage.getItem("visibleCount");
+        return saved ? JSON.parse(saved) : 1;
+    });
+    const [counterCols, setCounterCols] = useState(() => {
+        const saved = localStorage.getItem("counterCols");
+        return saved ? JSON.parse(saved) : 1;
+    });
+
+    const [fontScale, setFontScale] = useState(1);
+
+    const [savedFilter, setSavedFilter] = useState(null);
+
+    const handleIncFn = () => {
+        setFontScale((prev) => Math.min(prev + 0.1, 1.8));
+    };
+
+    const handleDecFn = () => {
+        setFontScale((prev) => Math.max(prev - 0.1, 0.8));
+    };
+
+
+
 
     const fetchData = async () => {
         const EMB_URL = import.meta.env.VITE_EMB_URL;
@@ -91,6 +114,27 @@ export const DataProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        localStorage.setItem("visibleCount", JSON.stringify(visibleCount));
+    }, [visibleCount]);
+
+    useEffect(() => {
+        localStorage.setItem("counterCols", JSON.stringify(counterCols));
+    }, [counterCols]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("savedFilter");
+        if (saved) {
+            const parsed = JSON.parse(saved);
+
+            setSavedFilter(parsed);
+            console.log(parsed);
+
+            setSelectedGroup(parsed.selectedGroup || "");
+            setGroupBy(parsed.groupBy || "");
+            setSortBy(parsed.sortBy || "");
+        }
+    }, []);
     return (
         <DataContext.Provider value={{
             tableData,
@@ -104,7 +148,14 @@ export const DataProvider = ({ children }) => {
             selectedGroup, setSelectedGroup,
             statusFilter, setStatusFilter,
             selectedRange, setSelectedRange,
-            effCounts
+            effCounts,
+            visibleCount,
+            setVisibleCount,
+            counterCols, setCounterCols,
+            handleIncFn,
+            handleDecFn,
+            fontScale,
+            savedFilter, setSavedFilter
         }}>
             {children}
         </DataContext.Provider>

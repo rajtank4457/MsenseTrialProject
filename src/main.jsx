@@ -5,15 +5,18 @@ import App from './App.jsx'
 import { DataProvider } from "./context/DataContext";
 import { ThemeProviderCustom, useThemeContext } from "./context/ThemeContext";
 import { ThemeProvider, CssBaseline } from "@mui/material";
+import { BrowserRouter } from "react-router-dom";
 
 function MainApp() {
   const { theme } = useThemeContext();
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 

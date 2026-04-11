@@ -12,12 +12,6 @@ function UserInfo() {
         email: "",
         phone_number: "",
     })
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [showFilter, setShowFilter] = useState(false);
-
-    const runningCount = tableData.filter(item => item.IsRun === true || item.IsRun === "true").length;
-    const stoppedCount = tableData.filter(item => item.IsRun === false || item.IsRun === "false").length;
-    const totalCount = tableData.length;
 
     useEffect(() => {
         fetchUserData();
@@ -55,13 +49,6 @@ function UserInfo() {
 
     return (
         <div className='pt-4'>
-            <Navbar runningCount={runningCount}
-                stoppedCount={stoppedCount}
-                totalCount={totalCount}
-                setStatusFilter={setStatusFilter}
-                statusFilter={statusFilter}
-                showFilter={showFilter}
-                setShowFilter={setShowFilter} />
             <div className='pt-[100px]'>
                 <Paper sx={{ padding: 4, maxWidth: 900, margin: "auto" }}>
                     <Typography variant="h5" className='text-center' gutterBottom>

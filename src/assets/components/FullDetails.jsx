@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import { Paper, Typography, Grid, TextField, Button } from '@mui/material';
+import React, { useEffect, useState } from 'react'
+import { Paper, Typography, Grid, TextField, Button } from '@mui/material'
 import { useData } from "../../context/DataContext";
+import PersonIcon from '@mui/icons-material/Person';
+import BusinessIcon from '@mui/icons-material/Business';
 
-function CompanyDetails() {
-    const {
-            runningCount,
-            stoppedCount,
-            totalCount,
-            avgEfficiency,
-            avgSpeed,
-            statusFilter,
-            setStatusFilter
-        } = useData();
+function FullDetails() {
+    const { tableData } = useData();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone_number: "",
         company_id: "",
         register_date: "",
         license_date: "",
         company_name: "",
         company_code: "",
         company_address: "",
-    })
-
+    });
 
     const getDaysLeft = (date) => {
         if (!date) return "";
@@ -43,6 +40,7 @@ function CompanyDetails() {
         if (days <= 7) return `${days} days (Expiring Soon ⚠️)`;
         return `${days} Days (Active ✅)`;
     };
+
 
     useEffect(() => {
         fetchUserData();
@@ -67,6 +65,10 @@ function CompanyDetails() {
             const userData = data.ResultData[0];
 
             setUser({
+                first_name: userData.FirstName || "",
+                last_name: userData.LastName || "",
+                email: userData.Email || "",
+                phone_number: userData.MobileNo || "",
                 company_id: userData.CompanyID || "",
                 register_date: userData.RegisterDate.split("T")[0] || "",
                 license_date: userData.LicenseDate.split("T")[0] || "",
@@ -79,14 +81,94 @@ function CompanyDetails() {
             console.error("Error fetching user:", error);
         }
     };
-
-   
     return (
-        <div className='pt-4'>
-            <div className='pt-[100px]'>
-                <Paper sx={{ padding: 4, maxWidth: 900, margin: "auto" }}>
+        <div className='pt-4 flex '>
+            <div className='pt-[100px] ml-[200px]'>
+                <Paper sx={{ padding: 4, maxWidth: 500, margin: "auto", height: "100%" }}>
+                    
                     <Typography variant="h5" className='text-center' gutterBottom>
-                        Company Information
+                       <PersonIcon fontSize='large'/> User Information
+                    </Typography>
+
+                    <form>
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="First Name"
+                                    name="first_name"
+                                    value={user.first_name}
+                                    onChange={(e) =>
+                                        setUser({ ...user, first_name: e.target.value })}
+                                    fullWidth
+                                    required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Last Name"
+                                    name="last_name"
+                                    value={user.last_name}
+                                    onChange={(e) =>
+                                        setUser({ ...user, last_name: e.target.value })}
+                                    fullWidth
+                                    required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Email"
+                                    name="email"
+                                    value={user.email}
+                                    onChange={(e) =>
+                                        setUser({ ...user, email: e.target.value })}
+                                    fullWidth
+                                    required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Phone Number"
+                                    name="phone_number"
+                                    value={user.phone_number}
+                                    onChange={(e) =>
+                                        setUser({ ...user, phone_number: e.target.value })}
+                                    fullWidth
+                                    required
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                />
+                            </Grid>
+                        </Grid>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            sx={{ mt: 4, py: 1.5 }}
+                            disabled={loading}
+                        >
+                            {loading ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </form>
+                </Paper>
+            </div>
+
+            <div className='pt-[100px] ml-[100px] mr-6'>
+                <Paper sx={{ padding: 4, maxWidth: 500, margin: "auto" }}>
+                    <Typography variant="h5" className='text-center' gutterBottom>
+                        <BusinessIcon fontSize='large'/> Company Information
                     </Typography>
 
                     <form>
@@ -210,4 +292,4 @@ function CompanyDetails() {
     )
 }
 
-export default CompanyDetails
+export default FullDetails

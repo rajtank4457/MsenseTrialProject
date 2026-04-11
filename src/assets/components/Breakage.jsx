@@ -85,7 +85,6 @@ function Breakage() {
 
     return (
         <div className='pt-4'>
-            <Navbar />
 
             <div className='pt-4'>
                 <div className='flex justify-center '>
